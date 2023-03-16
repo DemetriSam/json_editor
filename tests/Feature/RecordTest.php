@@ -76,6 +76,20 @@ class RecordTest extends TestCase
     {
         $response = $this->get(route('records.create'));
         $response->assertStatus(200);
+        $response->assertViewIs('record.create');
+    }
+
+    public function test_edit_form_can_be_rendered()
+    {
+        $response = $this->get(route(
+            'records.edit',
+            ['record' => Record::create([
+                'data' => json_encode([]),
+                'user_id' => User::factory()->create()->id
+            ])->id]
+        ));
+        $response->assertStatus(200);
+        $response->assertViewIs('record.edit');
     }
 
     public function test_record_can_be_updated()
