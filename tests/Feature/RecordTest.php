@@ -28,7 +28,7 @@ class RecordTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_record_can_be_created()
+    public function test_record_can_be_created_and_updated()
     {
         $this->seed();
         $user = User::first();
@@ -43,11 +43,26 @@ class RecordTest extends TestCase
             ->post(route('records.store', ['data' => $this->data]));
 
         $response->assertStatus(200);
+        $this->assertDatabaseHas('records', ['data' => $this->castAsJson($this->data)]);
+        $json = $response->content();
+        $recordId = json_decode($json)->id;
 
-        $responseGet = $this->withHeader('AuthToken', $this->token)
-            ->get(route('records.store.get', ['data' => $this->data]));
+        $code = '$data->key = \'changed\';';
 
-        $responseGet->assertStatus(200);
+        $response2 = $this->withHeader('AuthToken', $this->token)
+            ->post(route('records.update', [
+                'record' => $recordId,
+                '_method' => 'PATCH',
+                'code' => $code,
+            ]));
+
+        $response2->assertStatus(200);
+        $this->assertDatabaseHas(
+            'records',
+            ['data' => $this->castAsJson(
+                json_encode(['key' => 'changed', 'key2' => [1, 2, 3, 4]])
+            )]
+        );
     }
 
     public function test_expired_token_not_give_access()
@@ -90,42 +105,5 @@ class RecordTest extends TestCase
         ));
         $response->assertStatus(200);
         $response->assertViewIs('record.edit');
-    }
-
-    public function test_record_can_be_updated()
-    {
-        $this->seed();
-        $user = User::first();
-
-        Token::create([
-            'token' => $this->tokenHash,
-            'user_id' => $user->id,
-            'expires_at' => now()->addMinutes(5)->format('Y-m-d H:i:s'),
-        ]);
-
-        $response = $this->withHeader('AuthToken', $this->token)
-            ->post(route('records.store', ['data' => $this->data]));
-
-        $response->assertStatus(200);
-        $this->assertDatabaseHas('records', ['data' => $this->castAsJson($this->data)]);
-        $json = $response->content();
-        $recordId = json_decode($json)->id;
-
-        $code = '$data->key = \'changed\';';
-
-        $response2 = $this->withHeader('AuthToken', $this->token)
-            ->post(route('records.update', [
-                'record' => $recordId,
-                '_method' => 'PATCH',
-                'code' => $code,
-            ]));
-
-        $response2->assertStatus(200);
-        $this->assertDatabaseHas(
-            'records',
-            ['data' => $this->castAsJson(
-                json_encode(['key' => 'changed', 'key2' => [1, 2, 3, 4]])
-            )]
-        );
     }
 }
