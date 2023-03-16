@@ -26,7 +26,7 @@ class RecordController extends Controller
      */
     public function create()
     {
-        //
+        return view('record.create');
     }
 
     /**
@@ -39,7 +39,6 @@ class RecordController extends Controller
     {
         $startTime = microtime(true);
         $startMemory = memory_get_usage();
-
         $tokens = Token::all();
         $userToken = $request->header('AuthToken');
 
@@ -60,9 +59,8 @@ class RecordController extends Controller
         if (!$isTokenFound || now()->greaterThan($foundedToken?->expires_at)) {
             abort(403);
         }
-
-        $record = Record::create(['data' => $request->data, 'user_id' => $token->user->id]);
-
+        $data = $request->input('data');
+        $record = Record::create(['data' => $data, 'user_id' => $token->user->id]);
         $endTime = microtime(true);
         $endMemory = memory_get_usage();
 

@@ -70,4 +70,10 @@ class RecordTest extends TestCase
 
         $responseGet->assertStatus(403);
     }
+
+    public function test_create_form_can_be_rendered()
+    {
+        $response = $this->get(route('records.create'));
+        $response->assertStatus(200);
+    }
 }

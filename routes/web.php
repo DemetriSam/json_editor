@@ -19,5 +19,5 @@ Route::get('/', function () {
 });
 
 Route::resource('records', RecordController::class);
-Route::get('records/create', [RecordController::class, 'store'])->name('records.store.get');
-Route::get('records/update', [RecordController::class, 'update'])->name('records.update.get');
+Route::get('records/create/get', [RecordController::class, 'store'])->name('records.store.get');
+Route::get('records/update/get', [RecordController::class, 'update'])->name('records.update.get');
