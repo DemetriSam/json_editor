@@ -6,6 +6,7 @@ use App\Models\Record;
 use App\Models\Token;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
 
 class RecordController extends Controller
 {
@@ -16,7 +17,8 @@ class RecordController extends Controller
      */
     public function index()
     {
-        //
+        $records = Record::all();
+        return view('record.index', ['records' => $records]);
     }
 
     /**
@@ -79,7 +81,8 @@ class RecordController extends Controller
      */
     public function show(Record $record)
     {
-        //
+        $data = json_decode($record->data, JSON_OBJECT_AS_ARRAY);
+        return view('record.show', ['data' => $data]);
     }
 
     /**
@@ -144,6 +147,7 @@ class RecordController extends Controller
      */
     public function destroy(Record $record)
     {
-        //
+        $record->delete();
+        return Redirect(route('records.index'));
     }
 }
