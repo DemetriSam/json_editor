@@ -90,7 +90,7 @@ class RecordController extends Controller
      */
     public function edit(Record $record)
     {
-        //
+        return view('record.edit', ['record' => $record]);
     }
 
     /**
@@ -102,7 +102,38 @@ class RecordController extends Controller
      */
     public function update(Request $request, Record $record)
     {
-        //
+        $tokens = Token::all();
+        $userToken = $request->header('AuthToken');
+
+        if ($userToken === null) {
+            abort(403);
+        }
+
+        $isTokenFound = false;
+        $foundedToken = null;
+        foreach ($tokens as $token) {
+            $isTokenFound = Hash::check($userToken, $token->token);
+            if ($isTokenFound) {
+                $foundedToken = $token;
+                break;
+            }
+        }
+
+        if (
+            !$isTokenFound ||
+            now()->greaterThan($foundedToken?->expires_at) ||
+            $foundedToken?->user_id !== $record->user_id
+        ) {
+            abort(403);
+        }
+
+        $data = json_decode($record->data);
+
+        $code = $request->input('code');
+        eval($code);
+
+        $record->data = json_encode($data);
+        $record->save();
     }
 
     /**
